@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 DATABASE = 'todos.db'
 
-# Create todos table if not exists
 def create_table():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -21,16 +20,10 @@ def create_table():
 
 create_table()
 
-@app.route('/todos', methods=['GET'])
-def get_todos():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM todos')
-    todos = cursor.fetchall()
-    conn.close()
-    return jsonify(todos)
+# Define a common prefix for all routes
+common_prefix = '/v1'
 
-@app.route('/addtodo', methods=['POST'])
+@app.route(f'{common_prefix}/addtodo', methods=['POST'])
 def add_todo():
     todo_title = request.json.get('todo_title')
     todo_description = request.json.get('todo_description')
@@ -44,6 +37,15 @@ def add_todo():
     conn.commit()
     conn.close()
     return jsonify({'message': 'Todo added successfully'}), 201
+
+@app.route(f'{common_prefix}/todos', methods=['GET'])
+def get_todos():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM todos')
+    todos = cursor.fetchall()
+    conn.close()
+    return jsonify(todos)
 
 if __name__ == '__main__':
     app.run(debug=True)
